@@ -1,0 +1,56 @@
+name: ESign DYLIB Build
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Install ldid (WORKING!)
+      run: |
+        curl -LO https://github.com/xerub/ldid/releases/download/2023-01-17/ldid
+        chmod +x ldid
+        sudo mv ldid /usr/local/bin/ldid
+        
+    - name: Setup Theos
+      run: |
+        git clone --depth=1 --recursive https://github.com/theos/theos.git ~/theos
+        echo "THEOS=~/theos" >> $GITHUB_ENV
+        echo "$HOME/theos/bin" >> $GITHUB_PATH
+        
+    - name: Install tools
+      run: |
+        sudo apt update
+        sudo apt install -y clang automake autoconf
+        
+    - name: Download SDK
+      run: |
+        curl -LO https://github.com/theos/sdks/releases/download/2024-10-01/iPhoneOS14.2.sdk.tar.xz
+        mkdir -p ~/theos/sdks
+        tar -xf iPhoneOS14.2.sdk.tar.xz -C ~/theos/sdks/
+        
+    - name: DYLIB Build
+      run: |
+        export ARCHS="arm64 arm64e"
+        export TARGET="iphone:clang:latest:14.0"
+        make clean && make package FINALPACKAGE=1
+        
+    - name: Upload .deb (ESign uchun)
+      uses: actions/upload-artifact@v4
+      with:
+        name: esign-deb
+        path: |
+          output/*.deb
+          
+    - name: Upload DYLIB (toza fayl)
+      uses: actions/upload-artifact@v4
+      with:
+        name: libVantroxESign.dylib
+        path: |
+          .theos/obj/*/*/lib*.dylib
