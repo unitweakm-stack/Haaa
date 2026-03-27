@@ -1,0 +1,10 @@
+cat > control << 'EOF'
+Package: com.vantrox.esigndylib
+Name: Vantrox ESign DYLIB
+Version: 1.0-1
+Architecture: iphoneos-arm64
+Description: ESign DYLIB injection - VANTROX bypass
+ PUBG 4.3.0 compatible (198KB)
+Section: Libraries
+Depends: mobilesubstrate
+EOF
